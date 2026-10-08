@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PropertyFinder - Zero Brokerage Real Estate</title>
+    <style>
+        :root {
+            --nb-red: #d32f2f;
+            --nb-red-hover: #b71c1c;
+            --nb-teal: #009587;
+            --nb-teal-light: #e0f2f1;
+            --nb-dark: #222222;
+            --nb-gray: #757575;
+            --nb-light-gray: #f4f5f7;
+            --nb-border: #e0e0e0;
+            --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --card-hover-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--nb-light-gray);
+            color: var(--nb-dark);
+        }
+
+        /* Top Navigation */
+        .navbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--nb-border);
+            padding: 14px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--nb-red);
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .brand span {
+            color: var(--nb-teal);
+            font-weight: 400;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-post-property {
+            background-color: var(--nb-teal);
+            color: #ffffff;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+        }
+
+        /* Hero Search Section */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.65)), 
+                        url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+            padding: 48px 20px 40px;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .hero p {
+            font-size: 1rem;
+            color: #eceff1;
+            margin-bottom: 24px;
+        }
+
+        .search-container {
+            max-width: 980px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            text-align: left;
+            color: var(--nb-dark);
+        }
+
+        /* Algorithm Info Banner inside Search */
+        .dsa-badge-strip {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            font-size: 0.75rem;
+        }
+
+        .dsa-badge {
+            background: #eef2ff;
+            color: #3730a3;
+            border: 1px solid #c7d2fe;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr 1.2fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .input-box label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--nb-gray);
+            text-transform: uppercase;
+        }
+
+        .input-box input, .input-box select {
+            border: 1px solid var(--nb-border);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-box input:focus, .input-box select:focus {
+            border-color: var(--nb-red);
+        }
+
+        .btn-search {
+            background-color: var(--nb-red);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            padding: 0 24px;
+            height: 42px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            align-self: flex-end;
+            transition: background-color 0.2s;
+        }
+
+        .btn-search:hover {
+            background-color: var(--nb-red-hover);
+        }
+
+        /* Results Area */
+        .main-content {
+            max-width: 1080px;
+            margin: 28px auto;
+            padding: 0 20px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .results-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .results-count {
+            color: var(--nb-gray);
+            font-size: 0.9rem;
+        }
+
+        /* Property Cards (Horizontal NoBroker layout) */
+        .property-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .property-card {
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid var(--nb-border);
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .property-card:hover {
+            box-shadow: var(--card-hover-shadow);
+            transform: translateY(-2px);
+        }
+
+        .card-image-wrap {
+            position: relative;
+            background: #f0f0f0;
+        }
+
+        .card-image-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            min-height: 210px;
+        }
+
+        .zero-brokerage-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.75);
+            color: #ffffff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .card-body {
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--nb-border);
+            padding-bottom: 10px;
+        }
+
+        .card-header-left h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--nb-dark);
+            margin-bottom: 4px;
+        }
+
+        .card-header-left p {
+            font-size: 0.85rem;
+            color: var(--nb-gray);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .price-box {
+            text-align: right;
+        }
+
+        .price-val {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--nb-dark);
+        }
+
+        .price-sub {
+            font-size: 0.75rem;
+            color: var(--nb-teal);
+            font-weight: 600;
+        }
+
+        .card-desc {
+            font-size: 0.87rem;
+            color: #4f5b66;
+            margin: 10px 0;
+            line-height: 1.45;
+        }
+
+        .amenities-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .amenities-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--nb-gray);
+            text-transform: uppercase;
+        }
+
+        .tag-pill {
+            background-color: var(--nb-teal-light);
+            color: var(--nb-teal);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 12px;
+            text-transform: capitalize;
+        }
+
+        .card-footer {
+            margin-top: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .unit-type-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: #ffebee;
+            color: var(--nb-red);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .btn-contact {
+            background: var(--nb-red);
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Empty / Error state */
+        .empty-placeholder {
+            text-align: center;
+            padding: 50px 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px dashed var(--nb-border);
+            color: var(--nb-gray);
+        }
+
+        @media (max-width: 860px) {
+            .search-grid {
+                grid-template-columns: 1fr;
+            }
+            .property-card {
+                grid-template-columns: 1fr;
+            }
+            .btn-search {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <a href="#" class="brand">
+            PROPERTY<span>FINDER</span>
+        </a>
+        <div class="nav-actions">
+            <span style="font-size: 0.85rem; color: #616161; font-weight: 500;">Zero Brokerage Guaranteed</span>
+            <button class="btn-post-property">Post Free Property Ad</button>
+        </div>
+    </nav>
+
+    <!-- Hero Search -->
+    <div class="hero">
+        <h1>World's Largest No-Brokerage Property Portal</h1>
+        <p>Direct from owners • Algorithmic match engine</p>
+
+        <div class="search-container">
+            <div class="dsa-badge-strip">
+                <span class="dsa-badge">🔍 Location: Wagner-Fischer Edit Distance (Fuzzy)</span>
+                <span class="dsa-badge">⚡ Description: KMP Search</span>
+                <span class="dsa-badge">🏷️ Amenity Tags: Aho-Corasick</span>
+            </div>
+
+            <div class="search-grid">
+                <div class="input-box">
+                    <label>Location / City</label>
+                    <input type="text" id="locationInput" placeholder="Try 'Gachiboli' or 'Kondapur'">
+                </div>
+
+                <div class="input-box">
+                    <label>Keyword / Feature</label>
+                    <input type="text" id="keywordInput" placeholder="e.g. pool, modern, gym">
+                </div>
+
+                <div class="input-box">
+                    <label>BHK Type</label>
+                    <select id="typeSelect">
+                        <option value="">Any BHK</option>
+                        <option value="1BHK">1 BHK</option>
+                        <option value="2BHK">2 BHK</option>
+                        <option value="3BHK">3 BHK</option>
+                        <option value="Villa">Villa</option>
+                    </select>
+                </div>
+
+                <div class="input-box">
+                    <label>Max Budget (₹)</label>
+                    <input type="number" id="priceInput" placeholder="e.g. 15000000">
+                </div>
+
+                <button class="btn-search" onclick="fetchProperties()">Search</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Listings View -->
+    <div class="main-content">
+        <div class="results-header">
+            <h2>Available Properties</h2>
+            <div class="results-count" id="resultsCount">Loading listings...</div>
+        </div>
+
+        <div class="property-list" id="propertyList"></div>
+    </div>
+
+    <script>
+const API_URL = "http://localhost:8080/api/properties/search";
+        // Curated real estate photos to rotate across cards
+        const propertyImages = [
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=700&q=80",
+            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=700&q=80",
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=700&q=80",
+            "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=700&q=80",
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=700&q=80",
+            "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=700&q=80"
+        ];
+
+        async function fetchProperties() {
+            const location = document.getElementById("locationInput").value.trim();
+            const keyword = document.getElementById("keywordInput").value.trim();
+            const type = document.getElementById("typeSelect").value;
+            const maxPrice = document.getElementById("priceInput").value.trim();
+
+            const params = new URLSearchParams();
+            if (location) params.append("location", location);
+            if (keyword) params.append("keyword", keyword);
+            if (type) params.append("type", type);
+            if (maxPrice) params.append("maxPrice", maxPrice);
+
+            try {
+                const res = await fetch(`${API_URL}?${params.toString()}`);
+                if (!res.ok) throw new Error("HTTP error " + res.status);
+                const data = await res.json();
+                renderListings(data);
+            } catch (err) {
+                console.error(err);
+                document.getElementById("resultsCount").innerText = "Connection failed";
+                document.getElementById("propertyList").innerHTML = `
+                    <div class="empty-placeholder">
+                        <h3>Could not connect to Spring Boot server</h3>
+                        <p style="margin-top: 8px;">Verify that <code>mvn spring-boot:run</code> is running on port 8080.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function formatIndianCurrency(num) {
+            if (num >= 10000000) {
+                return "₹ " + (num / 10000000).toFixed(2) + " Cr";
+            } else if (num >= 100000) {
+                return "₹ " + (num / 100000).toFixed(2) + " Lac";
+            }
+            return "₹ " + num.toLocaleString('en-IN');
+        }
+
+        function renderListings(properties) {
+            const container = document.getElementById("propertyList");
+            const countLabel = document.getElementById("resultsCount");
+            container.innerHTML = "";
+
+            countLabel.innerText = `${properties.length} propert${properties.length === 1 ? 'y' : 'ies'} found`;
+
+            if (properties.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-placeholder">
+                        <h3>No Properties Matched Your Search</h3>
+                        <p style="margin-top: 6px;">Try loosening your budget, or test typo tolerance (e.g., "Gachiboli").</p>
+                    </div>
+                `;
+                return;
+            }
+
+            properties.forEach((item, index) => {
+                const imgUrl = propertyImages[index % propertyImages.length];
+
+                const tagPills = (item.detectedAmenities && item.detectedAmenities.length > 0)
+                    ? item.detectedAmenities.map(a => `<span class="tag-pill">${a}</span>`).join("")
+                    : `<span style="font-size: 0.75rem; color: #9e9e9e;">Standard amenities</span>`;
+
+                const card = document.createElement("div");
+                card.className = "property-card";
+                card.innerHTML = `
+                    <div class="card-image-wrap">
+                        <img src="${imgUrl}" alt="${item.title}">
+                        <div class="zero-brokerage-tag">Zero Brokerage</div>
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <div class="card-header">
+                                <div class="card-header-left">
+                                    <h3>${item.title}</h3>
+                                    <p>📍 ${item.location}, Hyderabad</p>
+                                </div>
+                                <div class="price-box">
+                                    <div class="price-val">${formatIndianCurrency(item.price)}</div>
+                                    <div class="price-sub">₹ ${(item.price * 0.00008).toFixed(0)} / sq.ft approx</div>
+                                </div>
+                            </div>
+                            <p class="card-desc">${item.description}</p>
+                            <div class="amenities-wrap">
+                                <span class="amenities-label">Tags:</span>
+                                ${tagPills}
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <span class="unit-type-tag">${item.type} Apartment</span>
+                            <button class="btn-contact">Contact Owner</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Auto-load on visit
+        window.addEventListener("DOMContentLoaded", fetchProperties);
+    </script>
+</body>
+</html>
